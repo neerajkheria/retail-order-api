@@ -1,9 +1,10 @@
 name: Deploy Node.js App
 
 on: #trigger
-  push:
+  push: #Trigger as soon a spush happens on any of the below branches
     branches:
       - main
+  workflow_dispatch: #Allow manual trigger if required
 
 jobs:
   build-and-run:
@@ -24,6 +25,33 @@ jobs:
       - name: Run Tests
         run: npm test
 
+      #Deployment to Dev Environment
+      - name: Deploy to Dev
+        if: github.ref == 'refs/heads/dev'
+        env:
+          API_URL: ${{ secrets.DEV_API_URL }}
+          run: |
+            echo "Deploying to DEV environment"
+            echo "API URL: $API_URL"
+
+      #Deployment to Staging Environment
+      - name: Deploy to Staging
+        if: github.ref == 'refs/heads/staging'
+        env:
+          API_URL: ${{ secrets.STAGING_API_URL }}
+          run: |
+            echo "Deploying to STAGING environment"
+            echo "API URL: $API_URL" 
+
+      #Deployment to Production Environment
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/prod'
+        env:
+          API_URL: ${{ secrets.PROD_API_URL }}
+          run: |
+            echo "Deploying to Production environment"
+            echo "API URL: $API_URL" 
+            
       - name: Start Application
         run: |
           node app.js &
