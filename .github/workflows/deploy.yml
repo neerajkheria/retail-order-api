@@ -1,0 +1,33 @@
+name: Deploy Node.js App
+
+on: #trigger
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest #runner
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+        
+      - name: Install Dependencies
+        run: npm install #run will execute command directly in the runner
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Start Application
+        run: |
+          node app.js &
+          sleep 5
+          curl http://localhost:3000
+
+
