@@ -1,14 +1,16 @@
-name: Deploy Node.js App
+name: Multi Environment Deployment
 
-on: #trigger
-  push: #Trigger as soon a spush happens on any of the below branches
+on:
+  push:
     branches:
-      - main
-  workflow_dispatch: #Allow manual trigger if required
+      - dev
+      - staging
+  workflow_dispatch:
 
 jobs:
-  build-and-run:
-    runs-on: ubuntu-latest #runner
+
+  deploy:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -17,45 +19,45 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-        
+          node-version: '18'
+
       - name: Install Dependencies
-        run: npm install #run will execute command directly in the runner
+        run: npm install
 
       - name: Run Tests
         run: npm test
 
-      #Deployment to Dev Environment
+      # -----------------------------
+      # DEV DEPLOYMENT
+      # -----------------------------
       - name: Deploy to Dev
         if: github.ref == 'refs/heads/dev'
         env:
           API_URL: ${{ secrets.DEV_API_URL }}
-          run: |
-            echo "Deploying to DEV environment"
-            echo "API URL: $API_URL"
+        run: |
+          echo "Deploying to DEV environment"
+          echo "API URL: $API_URL"
 
-      #Deployment to Staging Environment
+      # -----------------------------
+      # STAGING DEPLOYMENT
+      # -----------------------------
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'
         env:
           API_URL: ${{ secrets.STAGING_API_URL }}
-          run: |
-            echo "Deploying to STAGING environment"
-            echo "API URL: $API_URL" 
+        run: |
+          echo "Deploying to STAGING environment"
+          echo "API URL: $API_URL"
 
-      #Deployment to Production Environment
+      # -----------------------------
+      # PRODUCTION DEPLOYMENT
+      # -----------------------------
       - name: Deploy to Production
-        if: github.ref == 'refs/heads/prod'
+        if: github.event_name == 'workflow_dispatch'
         env:
           API_URL: ${{ secrets.PROD_API_URL }}
-          run: |
-            echo "Deploying to Production environment"
-            echo "API URL: $API_URL" 
-            
-      - name: Start Application
         run: |
-          node app.js &
-          sleep 5
-          curl http://localhost:3000
+          echo "Deploying to PRODUCTION"
+          echo "API URL: $API_URL"
 
 
